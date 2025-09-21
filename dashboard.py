@@ -171,7 +171,9 @@ else:
             with st.container(border=True):
                 st.markdown(f"##### {title}")
                 st.markdown(f"**- 보장 재해:** {row['보장재해']}")
-                st.markdown(f"**- 선택 가능 자기부담비율:** {row['자기부담비율']}")
+                
+                # [수정된 부분] 컬럼명을 엑셀 파일과 정확히 일치시킴
+                st.markdown(f"**- 선택 가능 자기부담비율:** {row['자기부담비율(선택가능)']}")
                 
                 special_rider = row['특약']
                 if pd.notna(special_rider):
