@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import numpy as np
-import openpyxl # .xlsx 파일을 읽기 위해 필요
+import openpyxl # .xlsx 파일을 읽기 위해 필요합니다.
 
 # ======================================================================================
 # 페이지 기본 설정
@@ -40,28 +39,26 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 # ======================================================================================
 # 데이터 로딩
 # ======================================================================================
 @st.cache_data
-def load_data(filepath, file_type):
+def load_data(filepath, engine=None):
     try:
-        if file_type == 'csv':
-            return pd.read_csv(filepath)
-        elif file_type == 'xlsx':
+        if filepath.endswith('.csv'):
+            df = pd.read_csv(filepath)
+        elif filepath.endswith('.xlsx'):
             # openpyxl 엔진을 사용하여 .xlsx 파일 읽기
-            return pd.read_excel(filepath, engine='openpyxl')
+            df = pd.read_excel(filepath, engine=engine)
+        return df
     except FileNotFoundError:
         st.error(f"오류: '{filepath}' 파일을 찾을 수 없습니다. dashboard.py와 같은 폴더에 있는지 확인해주세요.")
         return None
 
-# 3가지 데이터 소스를 모두 로드
-df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv", 'csv')
-income_df = load_data("소득회복지수.xlsx", 'xlsx')
-
-# **주의**: GitHub 배포 안정성을 위해 파일명을 영어로 변경하는 것을 강력히 권장합니다.
-# 로컬 파일명을 'insurance_list.xlsx'로 변경해주세요.
-insurance_df = load_data("insurance_list.xlsx", 'xlsx') 
+# 기본 리스크 데이터와 소득회복지수 데이터를 각각 로드
+df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv")
+income_df = load_data("소득회복지수.xlsx", engine='openpyxl')
 
 
 # ======================================================================================
@@ -70,7 +67,7 @@ insurance_df = load_data("insurance_list.xlsx", 'xlsx')
 st.title("📄 NH 농업 리스크 진단서")
 st.markdown("귀하의 농장/기업이 가진 고유의 강점과 약점을 데이터로 분석하여, 지속가능한 성장을 위한 방향을 제시합니다.")
 
-if df is None or income_df is None or insurance_df is None:
+if df is None or income_df is None:
     st.stop()
 
 # --------------------------------------------------------------------------------------
@@ -128,7 +125,6 @@ else:
         st.markdown("#### 🌱 **기후 & 환경 대응력**")
         st.metric("기후회복력 점수", f"{user_row['기후회복력점수']:.1f} 점")
         st.metric("지역 포트폴리오", f"{user_row['지역기후포트폴리오지수']:.1f} 점")
-    
     with col_market:
         st.markdown("#### 📈 **시장 & 수익성 분석**")
         st.metric("가격 변동성", user_row['가격변동성경보'])
@@ -145,8 +141,8 @@ else:
         """)
     
     st.divider()
-    
-    # --- 품목별 유통 및 소득 안정성 분석 ---
+
+    # --- [신규 기능 추가] 품목별 유통 및 소득 안정성 분석 ---
     st.subheader(f"참고: '{selected_item}' 품목의 일반적인 유통 및 소득 안정성")
     
     item_income_data = income_df[income_df['품목'] == selected_item]
@@ -156,7 +152,7 @@ else:
     else:
         item_income_row = item_income_data.iloc[0]
         
-        col_income1, col_income2 = st.columns([2, 1])
+        col_income1, col_income2 = st.columns([2, 1]) # 컬럼 비율 조정
         with col_income1:
             st.markdown("##### **농가 수취율 비교 (vs 유통비용)**")
             st.caption("소비자 가격 중 농가에게 돌아오는 몫의 비율입니다.")
@@ -178,38 +174,8 @@ else:
         
         with col_income2:
             st.metric("소득회복력 지수", f"{item_income_row['소득회복력 지수(%)']:.2f} %",
-                      help="가격이 폭락했을 때, 다음 해에 얼마나 빨리 소득을 회복하는지를 나타내는 지표입니다. 높을수록 소득 안정성이 높습니다.")
+                      help="가격이 폭락했을 때, 다음 해에 얼마나 빨리 소득을 회복하는지를 나타냅니다. 높을수록 소득 안정성이 높습니다.")
         
-    st.divider()
-
-    # --- 맞춤 보험 상품 정보 ---
-    st.subheader(f"🛡️ '{selected_item}' 가입 가능 보험 상품 정보")
-    
-    matching_insurance = insurance_df[insurance_df['품목'].fillna('').str.contains(selected_item)]
-
-    if matching_insurance.empty:
-        st.warning(f"'{selected_item}' 품목에 대한 맞춤 보험 상품을 찾을 수 없습니다.")
-    else:
-        st.caption("아래는 귀하의 주력 품목이 가입할 수 있는 농작물재해보험 상품 목록입니다. 세부 조건은 가입 시점에 따라 달라질 수 있습니다.")
-        for index, row in matching_insurance.iterrows():
-            with st.container(border=True):
-                st.markdown(f"#### {row['상품군']}")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("보장 방식", row['보장방식'])
-                    if pd.notna(row['계절/재배구분']):
-                        st.caption(f"재배 구분: {row['계절/재배구분']}")
-                with col2:
-                    st.metric("자기부담비율", str(row['자기부담비율(선택가능)']))
-
-                st.markdown("**주요 보장 재해**")
-                st.info(f"{row['보장재해']}")
-                
-                if pd.notna(row['특약']):
-                    st.markdown("**선택 가능 특약**")
-                    st.success(f"{row['특약']}")
-    
     st.divider()
 
     # --- 핵심 지표 시각화 ---
