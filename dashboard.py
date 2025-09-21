@@ -59,7 +59,7 @@ def load_data(filepath, file_type):
 df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv", 'csv')
 income_df = load_data("소득회복지수.xlsx", 'xlsx')
 
-# [핵심 수정] 파일명을 영어로 변경하고, 타입을 'xlsx'로 지정하여 로드합니다.
+# [핵심 수정] 파일명과 타입을 변경하여 로드합니다.
 # **주의**: GitHub에 업로드할 파일 이름도 반드시 'insurance_list.xlsx'여야 합니다.
 insurance_df = load_data("insurance_list.xlsx", 'xlsx') 
 
