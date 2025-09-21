@@ -59,7 +59,7 @@ def load_data(filepath, file_type):
 # 3가지 데이터 소스를 모두 로드
 df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv", 'csv')
 income_df = load_data("소득회복지수.xlsx", 'xlsx')
-insurance_df = load_data("보험리스트정리.txt", 'tsv')
+insurance_df = load_data("insurance_list.txt", 'tsv')
 
 # ======================================================================================
 # 대시보드 UI 구성
