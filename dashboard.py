@@ -49,9 +49,8 @@ def load_data(filepath, file_type):
         if file_type == 'csv':
             return pd.read_csv(filepath)
         elif file_type == 'xlsx':
+            # openpyxl 엔진을 사용하여 .xlsx 파일 읽기
             return pd.read_excel(filepath, engine='openpyxl')
-        elif file_type == 'tsv': # Tab-separated txt file
-            return pd.read_csv(filepath, sep='\t')
     except FileNotFoundError:
         st.error(f"오류: '{filepath}' 파일을 찾을 수 없습니다. dashboard.py와 같은 폴더에 있는지 확인해주세요.")
         return None
@@ -59,7 +58,11 @@ def load_data(filepath, file_type):
 # 3가지 데이터 소스를 모두 로드
 df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv", 'csv')
 income_df = load_data("소득회복지수.xlsx", 'xlsx')
-insurance_df = load_data("insurance_list.txt", 'tsv')
+
+# [핵심 수정] 파일명을 영어로 변경하고, 타입을 'xlsx'로 지정하여 로드합니다.
+# **주의**: GitHub에 업로드할 파일 이름도 반드시 'insurance_list.xlsx'여야 합니다.
+insurance_df = load_data("insurance_list.xlsx", 'xlsx') 
+
 
 # ======================================================================================
 # 대시보드 UI 구성
