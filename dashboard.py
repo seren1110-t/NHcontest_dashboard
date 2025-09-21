@@ -95,17 +95,17 @@ else:
     user_row = user_data.iloc[0]
     included_seasons = ", ".join(user_data['기후계절_유형'].unique())
     
-    st.info(f"본 진단은 **{included_seasons}**을 포함, 1년간의 데이터를 종합한 **연간 분석 결과**입니다.")
+    st.info(f"본 진단은 {included_seasons}을 포함, 1년간의 데이터를 종합한 연간 분석 결과입니다.")
     
     # --- 진단 요약 ---
     st.subheader("진단 요약: 귀하의 리스크 관리 유형")
     
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("**주요 리스크 환경**")
+        st.markdown("주요 리스크 환경")
         st.markdown(f"### {user_row['대분류_유형']}")
     with col2:
-        st.markdown("**추천 관리 전략**")
+        st.markdown("추천 관리 전략")
         st.markdown(f"### {user_row['리스크관리_유형']}")
     
     with st.expander("› 유형별 상세 설명 및 추천 전략 보기"):
@@ -147,22 +147,22 @@ else:
     
     col_climate, col_market = st.columns(2)
     with col_climate:
-        st.markdown("#### 🌱 **기후 & 환경 대응력**")
+        st.markdown("#### 🌱 기후 & 환경 대응력")
         st.metric("기후회복력 점수", f"{user_row['기후회복력점수']:.1f} 점")
         st.metric("지역 포트폴리오", f"{user_row['지역기후포트폴리오지수']:.1f} 점")
     with col_market:
-        st.markdown("#### 📈 **시장 & 수익성 분석**")
+        st.markdown("#### 📈 시장 & 수익성 분석")
         st.metric("가격 변동성", user_row['가격변동성경보'])
         st.metric("현재 판매 적합도", f"{user_row['출하최적기지수']:.1f} 점")
         st.metric("생육 리스크", f"{user_row['생육주기리스크지수']:.2f}")
 
     with st.expander("💡 각 지표별 금융 연계 활용 전략 보기"):
         st.markdown("""
-        - **기후회복력 점수**: 점수가 낮은 농가(고위험군)는 **농작물재해보험** 가입을 우선 고려하고, 기후 완화 **시설(관수, 환기) 자금 대출** 심사 시 긍정적 요소로 활용할 수 있습니다.
-        - **가격 변동성**: '경고' 등급 시, **계약재배나 선도거래**와 같은 가격 안정화 금융 상품을 통해 리스크를 관리할 수 있습니다.
-        - **생육 리스크**: 지수가 높은(절댓값이 큰) 품목은 미래 소득 불확실성이 크므로, **재해 대비 자금 계획**을 수립하거나 대출 한도 설정 시 리스크 관리 지표로 활용됩니다.
-        - **현재 판매 적합도**: 지수가 낮을 때(판매 부적기)는 **'출하 연계 브릿지론'** 등 단기 운영자금을 통해 최적 출하기를 기다릴 수 있고, 지수가 높을 때는 **단기 운전자금 대출(인력/물류비)** 수요를 예측할 수 있습니다.
-        - **지역 포트폴리오**: 지수가 높은 지역은 기후 변화에 안정적인 소득 구조를 가질 확률이 높으므로, **신규 귀농/청년농 대출 상품의 전략적 타겟 지역**으로 설정하는 데 활용됩니다.
+        - 기후회복력 점수: 점수가 낮은 농가(고위험군)는 농작물재해보험 가입을 우선 고려하고, 기후 완화 시설(관수, 환기) 자금 대출 심사 시 긍정적 요소로 활용할 수 있습니다.
+        - 가격 변동성: '경고' 등급 시, 계약재배나 선도거래와 같은 가격 안정화 금융 상품을 통해 리스크를 관리할 수 있습니다.
+        - 생육 리스크: 지수가 높은(절댓값이 큰) 품목은 미래 소득 불확실성이 크므로, 재해 대비 자금 계획을 수립하거나 대출 한도 설정 시 리스크 관리 지표로 활용됩니다.
+        - 현재 판매 적합도: 지수가 낮을 때(판매 부적기)는 '출하 연계 브릿지론' 등 단기 운영자금을 통해 최적 출하기를 기다릴 수 있고, 지수가 높을 때는 단기 운전자금 대출(인력/물류비) 수요를 예측할 수 있습니다.
+        - 지역 포트폴리오: 지수가 높은 지역은 기후 변화에 안정적인 소득 구조를 가질 확률이 높으므로, 신규 귀농/청년농 대출 상품의 전략적 타겟 지역으로 설정하는 데 활용됩니다.
         """)
     
     st.divider()
@@ -184,14 +184,14 @@ else:
 
             with st.container(border=True):
                 st.markdown(f"##### {title}")
-                st.markdown(f"**- 보장 재해:** {row['보장재해']}")
-                st.markdown(f"**- 선택 가능 자기부담비율:** {row['자기부담비율(선택가능)']}")
+                st.markdown(f"- 보장 재해: {row['보장재해']}")
+                st.markdown(f"- 선택 가능 자기부담비율: {row['자기부담비율(선택가능)']}")
                 
                 special_rider = row['특약']
                 if pd.notna(special_rider):
-                    st.markdown(f"**- 주요 특약:** {special_rider}")
+                    st.markdown(f"- 주요 특약: {special_rider}")
                 else:
-                    st.markdown("**- 주요 특약:** 해당 없음")
+                    st.markdown("- 주요 특약: 해당 없음")
             st.write("") 
     
     st.divider()
@@ -208,7 +208,7 @@ else:
         
         col_income1, col_income2 = st.columns([2, 1])
         with col_income1:
-            st.markdown("##### **농가 수취율 비교 (vs 유통비용)**")
+            st.markdown("##### 농가 수취율 비교 (vs 유통비용)")
             st.caption("소비자 가격 중 농가에게 돌아오는 몫의 비율입니다.")
             
             income_chart_df = pd.DataFrame({
