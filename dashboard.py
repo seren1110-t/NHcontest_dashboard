@@ -60,9 +60,7 @@ def load_data(filepath, engine=None):
 df = load_data("농업_리스크관리유형_최종분석_보고서_v2.csv")
 income_df = load_data("소득회복지수.xlsx", engine='openpyxl')
 
-# ======================================================================================
-# [기능 추가] 보험 상품 데이터 로딩
-# ======================================================================================
+# 보험 상품 데이터 로딩
 insurance_df = load_data("보험리스트정리.xlsx", engine='openpyxl')
 
 
@@ -97,7 +95,7 @@ else:
     user_row = user_data.iloc[0]
     included_seasons = ", ".join(user_data['기후계절_유형'].unique())
     
-    st.info(f"**분석 기간**: 이 결과는 **{included_seasons}**을 포함한 1년 전체 데이터를 종합하여 도출된 **연간 종합 진단**입니다.")
+    st.info(f"본 진단은 **{included_seasons}**을 포함, 1년간의 데이터를 종합한 **연간 분석 결과**입니다.")
     
     # --- 진단 요약 ---
     st.subheader("진단 요약: 귀하의 리스크 관리 유형")
@@ -123,8 +121,29 @@ else:
 
     st.divider()
 
+    # ======================================================================================
+    # [위치 변경] 핵심 지표 시각화를 상단으로 이동
+    # ======================================================================================
+    st.subheader("핵심 지표 현황")
+
+    def create_gauge_chart(value, title, color):
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number", value = value, title = {'text': f"<b>{title}</b>"},
+            gauge = { 'axis': {'range': [None, 100]}, 'bar': {'color': color} }
+        ))
+        fig.update_layout(height=250, margin=dict(l=30, r=30, t=60, b=30), paper_bgcolor="rgba(0,0,0,0)", font_color="gray")
+        return fig
+
+    g_col1, g_col2 = st.columns(2)
+    with g_col1:
+        st.plotly_chart(create_gauge_chart(user_row['기후회복력점수'], "기후 대응 능력", "green"), use_container_width=True)
+    with g_col2:
+        st.plotly_chart(create_gauge_chart(user_row['출하최적기지수'], "현재 판매 적합도", "blue"), use_container_width=True)
+        
+    st.divider()
+
     # --- 세부 지표 분석 ---
-    st.subheader("세부 지표 분석: 우리 농장의 강점과 약점")
+    st.subheader("세부 지표 분석: 농장의 강점과 약점")
     
     col_climate, col_market = st.columns(2)
     with col_climate:
@@ -148,21 +167,16 @@ else:
     
     st.divider()
 
-    # ======================================================================================
-    # [신규 기능] 선택 품목 기반 맞춤 보험 상품 정보 표시
-    # ======================================================================================
+    # --- 선택 품목 기반 맞춤 보험 상품 정보 표시 ---
     st.subheader(f"🛡️ '{selected_item}' 맞춤 보험 상품 정보")
-    st.caption("아래 정보는 귀하의 품목으로 가입 가능한 농작물재해보험의 일반적인 내용입니다.")
+    st.caption("선택하신 품목으로 가입 가능한 농작물재해보험의 주요 정보입니다.")
 
-    # 선택된 품목에 해당하는 보험 데이터 필터링
     item_insurance_data = insurance_df[insurance_df['품목'] == selected_item]
 
     if item_insurance_data.empty:
         st.info(f"'{selected_item}' 품목에 대한 맞춤 보험 상품 정보를 찾을 수 없습니다. (일부 품목은 주산지 중심의 포괄적 보험 상품에 포함될 수 있습니다.)")
     else:
-        # 동일 품목에 여러 보험 상품이 있을 수 있으므로(예: 봄감자, 가을감자), 반복문으로 모두 표시
         for index, row in item_insurance_data.iterrows():
-            # 재배 구분이 있는 경우 제목에 포함하여 명확성 증대
             title = row['상품군']
             cultivation_type = row['계절/재배구분']
             if pd.notna(cultivation_type):
@@ -171,8 +185,6 @@ else:
             with st.container(border=True):
                 st.markdown(f"##### {title}")
                 st.markdown(f"**- 보장 재해:** {row['보장재해']}")
-                
-                # [수정된 부분] 컬럼명을 엑셀 파일과 정확히 일치시킴
                 st.markdown(f"**- 선택 가능 자기부담비율:** {row['자기부담비율(선택가능)']}")
                 
                 special_rider = row['특약']
@@ -180,12 +192,12 @@ else:
                     st.markdown(f"**- 주요 특약:** {special_rider}")
                 else:
                     st.markdown("**- 주요 특약:** 해당 없음")
-            st.write("") # 상품 간 간격 추가
+            st.write("") 
     
     st.divider()
     
-    # --- [기존 기능] 품목별 유통 및 소득 안정성 분석 ---
-    st.subheader(f"📊 참고: '{selected_item}' 품목의 일반적인 유통 및 소득 안정성")
+    # --- 품목별 유통 및 소득 안정성 분석 ---
+    st.subheader(f"📊 '{selected_item}' 품목의 유통 및 소득 안정성 분석")
     
     item_income_data = income_df[income_df['품목'] == selected_item]
     
@@ -194,7 +206,7 @@ else:
     else:
         item_income_row = item_income_data.iloc[0]
         
-        col_income1, col_income2 = st.columns([2, 1]) # 컬럼 비율 조정
+        col_income1, col_income2 = st.columns([2, 1])
         with col_income1:
             st.markdown("##### **농가 수취율 비교 (vs 유통비용)**")
             st.caption("소비자 가격 중 농가에게 돌아오는 몫의 비율입니다.")
@@ -220,22 +232,5 @@ else:
         
     st.divider()
 
-    # --- 핵심 지표 시각화 ---
-    st.subheader("핵심 지표 현황")
-
-    def create_gauge_chart(value, title, color):
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number", value = value, title = {'text': f"<b>{title}</b>"},
-            gauge = { 'axis': {'range': [None, 100]}, 'bar': {'color': color} }
-        ))
-        fig.update_layout(height=250, margin=dict(l=30, r=30, t=60, b=30), paper_bgcolor="rgba(0,0,0,0)", font_color="gray")
-        return fig
-
-    g_col1, g_col2 = st.columns(2)
-    with g_col1:
-        st.plotly_chart(create_gauge_chart(user_row['기후회복력점수'], "기후 대응 능력", "green"), use_container_width=True)
-    with g_col2:
-        st.plotly_chart(create_gauge_chart(user_row['출하최적기지수'], "현재 판매 적합도", "blue"), use_container_width=True)
-
     st.sidebar.markdown("---")
-    st.sidebar.info("**향후 업데이트 예정**: AI 금융 컨설턴트가 진단 결과에 맞는 최적의 금융 상품(대출/보험)을 추천해 드립니다.")
+    st.sidebar.info("향후 업데이트 예정: 진단 결과에 맞는 최적의 금융 상품(대출/보험) 추천 기능이 추가됩니다.")
